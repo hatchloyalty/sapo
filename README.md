@@ -4,8 +4,9 @@ This gem is an exploration of techniques and tools that we can use to manipulate
 the Salesforce Marketing Cloud.
 
 - [] Configurable with dotenv
-- [] Get an OAuth token
+- [x] Get an OAuth token
 - [] Start building around the Data Extensions API: List extensions.
+- [] Convert Authorization code to Faraday
 - [] Create a new extension randomly.
 - [] Delete an extension
 - [] Push data into the extension.
