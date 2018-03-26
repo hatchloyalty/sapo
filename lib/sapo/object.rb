@@ -2,6 +2,7 @@
 
 module Sapo
   class Object
+    BLACKLISTED_PROPERTIES = %w[DataRetentionPeriod].freeze
     extend Savon::Model
     client wsdl: Client::WSDL_URI,
            endpoint: Client::SOAP_ENDPOINT_URI,
@@ -22,7 +23,8 @@ module Sapo
                :extract,
                :get_system_status
 
-    attr_reader :properties, :type
+    attr_reader :type
+    attr_accessor :properties
     def initialize(type)
       @type = type
       @properties = []
@@ -48,10 +50,18 @@ module Sapo
       response = describe(message: { DescribeRequests: {
                             ObjectDefinitionRequest: { ObjectType: type }
                           } })
-      response.body.dig(:definition_response_msg, :object_definition, :properties)
-              .each do |prop_description|
-        properties << prop_description.fetch(:name)
-      end
+      @properties =
+        response.body
+                .dig(:definition_response_msg,
+                     :object_definition,
+                     :properties)
+                .map do |prop_description|
+                  next unless prop_description.fetch(:is_retrievable)
+                  next if BLACKLISTED_PROPERTIES.include?(
+                    prop_description.fetch(:name)
+                  )
+                  prop_description.fetch(:name)
+                end.compact
       properties
     end
   end
